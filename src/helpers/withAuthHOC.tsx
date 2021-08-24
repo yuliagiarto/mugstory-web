@@ -7,7 +7,7 @@ interface IState {
   status?: string;
 }
 
-const withAuth = (Comp: React.ComponentType) => {
+const withAuthHOC = (Comp: React.ComponentType) => {
   return class extends React.Component<IProps, IState> {
     constructor(props: IProps) {
       super(props);
@@ -41,4 +41,4 @@ const withAuth = (Comp: React.ComponentType) => {
   };
 };
 
-export default withAuth;
+export default withAuthHOC;

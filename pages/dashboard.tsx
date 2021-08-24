@@ -1,5 +1,5 @@
 import React from "react";
-import withAuth from "../src/helpers/withAuth";
+import withAuth from "../src/helpers/withAuthHOC";
 import { auth, firebase } from "../src/firebase";
 
 class Dashboard extends React.Component {
