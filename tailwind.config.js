@@ -1,11 +1,77 @@
 module.exports = {
-  purge: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
-  darkMode: false, // or 'media' or 'class'
-  theme: {
-    extend: {},
-  },
-  variants: {
-    extend: {},
-  },
-  plugins: [],
-}
+    purge: [
+        "./pages/**/*.{js,ts,jsx,tsx}",
+        "./components/**/*.{js,ts,jsx,tsx}",
+    ],
+    darkMode: false, // or 'media' or 'class'
+    theme: {
+        extend: {
+            colors: {
+                "burnt-sienna": {
+                    50: "#fef8f6",
+                    100: "#fdf1ee",
+                    200: "#f9dbd4",
+                    300: "#f5c5b9",
+                    400: "#ee9a85",
+                    500: "#e76f51",
+                    600: "#d06449",
+                    700: "#ad533d",
+                    800: "#8b4331",
+                    900: "#713628",
+                },
+                "sandy-brown": {
+                    50: "#fefaf7",
+                    100: "#fef6ef",
+                    200: "#fce8d8",
+                    300: "#fbdac0",
+                    400: "#f7be90",
+                    500: "#f4a261",
+                    600: "#dc9257",
+                    700: "#b77a49",
+                    800: "#92613a",
+                    900: "#784f30",
+                },
+                equator: {
+                    50: "#fefcf8",
+                    100: "#fdf9f0",
+                    200: "#faf0da",
+                    300: "#f6e7c3",
+                    400: "#f0d697",
+                    500: "#e9c46a",
+                    600: "#d2b05f",
+                    700: "#af9350",
+                    800: "#8c7640",
+                    900: "#726034",
+                },
+                "persian-green": {
+                    50: "#f4faf9",
+                    100: "#eaf5f4",
+                    200: "#cae7e3",
+                    300: "#aad8d2",
+                    400: "#6abab1",
+                    500: "#2a9d8f",
+                    600: "#268d81",
+                    700: "#20766b",
+                    800: "#195e56",
+                    900: "#154d46",
+                },
+                "blue-dianne": {
+                    50: "#f4f6f6",
+                    100: "#e9edee",
+                    200: "#c9d1d4",
+                    300: "#a8b5ba",
+                    400: "#677e87",
+                    500: "#264653",
+                    600: "#223f4b",
+                    700: "#1d353e",
+                    800: "#172a32",
+                    900: "#132229",
+                },
+            },
+        },
+    },
+    variants: {
+        extend: {},
+    },
+    plugins: [],
+};
