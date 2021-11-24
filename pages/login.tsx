@@ -202,7 +202,7 @@ export default function Login() {
               </span>
               Sign in
             </button>
-            <GoogleButton onClick={handleSignIn}>
+            <GoogleButton onClick={handleSignIn as any}>
               Sign In using google
             </GoogleButton>
           </div>
