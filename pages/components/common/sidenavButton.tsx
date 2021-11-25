@@ -20,7 +20,7 @@ const SidenavButton = (props: IProp) => {
 interface IProp {
   onClick: () => void;
   label: String;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export default SidenavButton;
