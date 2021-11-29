@@ -1,4 +1,5 @@
-import Tree from "react-d3-tree";
+import TreeD from "react-d3-tree";
+import { useContainerSize } from "../../../../src/helpers/windowSize";
 
 const TreeComponent = (prop: IProp) => {
   const orgChart = {
@@ -36,10 +37,20 @@ const TreeComponent = (prop: IProp) => {
       },
     ],
   };
+  const { width, height } = useContainerSize(".tree-container");
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
-    <div className="flex justify-between h-full">
-      <Tree data={orgChart} />
+    <div className="flex justify-between h-full tree-container">
+      <TreeD
+        data={orgChart}
+        shouldCollapseNeighborNodes={true}
+        enableLegacyTransitions={true}
+        zoomable={true}
+        scaleExtent={{ max: 2, min: 0.1 }}
+        orientation={"vertical"}
+        pathFunc={"step"}
+        translate={{ x: width / 2, y: 20 }}
+      />
     </div>
   );
 };
