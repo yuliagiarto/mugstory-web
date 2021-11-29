@@ -4,6 +4,7 @@ import withAuth from "../src/helpers/withAuthHOC";
 import Example from "./components/dashboard/contents/example";
 import Profile from "./components/dashboard/contents/profile";
 import Status from "./components/dashboard/contents/status";
+import TreeComponent from "./components/dashboard/contents/tree";
 import SidenavBar from "./components/dashboard/sidenavBar";
 
 interface IProps {}
@@ -25,6 +26,8 @@ class Dashboard extends React.Component<IProps, IState> {
         return <Profile />;
       case Contents.status:
         return <Status />;
+      case Contents.tree:
+        return <TreeComponent />;
       default:
         return <div>404 not found</div>;
     }
