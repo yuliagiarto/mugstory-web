@@ -63,9 +63,10 @@ const TreeComponent = (prop: IProp) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
-  const nodeSize = { x: width / 4, y: width / 4 };
+  const nodeSize = { x: width / 4, y: height / 3 };
   const openEditModal = useCallback(
-    (node: TreeNodeDatum) => {
+    (node: TreeNodeDatum, e: React.MouseEvent<HTMLElement>) => {
+      e.stopPropagation();
       setShowModal(!showModal);
       setSelectedNode(node);
     },
@@ -128,7 +129,7 @@ const TreeComponent = (prop: IProp) => {
                   <a
                     className="bg-blue-500 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-blue-400 rounded uppercase"
                     href="#"
-                    onClick={() => openEditModal(nodeDatum)}
+                    onClick={(e) => openEditModal(nodeDatum, e)}
                   >
                     Edit
                   </a>
