@@ -104,13 +104,7 @@ const TreeComponent = (prop: IProp) => {
       }
 
       return (
-        <g
-          onClick={() => {
-            openEditModal(nodeDatum);
-            toggleNode();
-          }}
-          strokeWidth={0}
-        >
+        <g onClick={toggleNode} strokeWidth={0}>
           <>
             <circle r={18} fill="#578aef" />
             <circle r={16} fill="#fff" />
@@ -129,6 +123,16 @@ const TreeComponent = (prop: IProp) => {
                     {nodeDatum.attributes?.content}
                   </div>
                 )}
+
+                <div className="p-6 bg-white border-gray-200 text-right">
+                  <a
+                    className="bg-blue-500 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-blue-400 rounded uppercase"
+                    href="#"
+                    onClick={() => openEditModal(nodeDatum)}
+                  >
+                    Edit
+                  </a>
+                </div>
               </div>
             </div>
           </foreignObject>
