@@ -4,8 +4,14 @@ import {
   CustomNodeElementProps,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Modal from "../../common/modal";
+import Joyride, {
+  CallBackProps,
+  STATUS,
+  Step,
+  StoreHelpers,
+} from "react-joyride";
 
 interface IForeignObjectProps {
   width: number;
@@ -142,6 +148,40 @@ const TreeComponent = (prop: IProp) => {
     },
     [openEditModal]
   );
+
+  // Tour Guide
+  const [run, setRun] = useState(true);
+  const [tourSteps, setTourSteps] = useState([
+    {
+      content:
+        "You can swipe the story tree and use scroll to zoom in and out.",
+      placement: "bottom",
+      styles: {
+        options: {
+          width: 300,
+        },
+      },
+      target: ".tree-container",
+      title: "Stories Tree",
+      disableBeacon: true,
+    },
+  ] as Step[]);
+  const handleJoyrideCallback = useCallback(
+    (data: CallBackProps) => {
+      const { status, type } = data;
+      const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+      if (finishedStatuses.includes(status)) {
+        setRun(false);
+      }
+
+      console.groupCollapsed(type);
+      console.log(data);
+      console.groupEnd();
+    },
+    [setRun]
+  );
+  // End Tour Guide
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <>
@@ -156,6 +196,18 @@ const TreeComponent = (prop: IProp) => {
           <form></form>
         </Modal>
       )}
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous={false}
+        run={run}
+        showSkipButton={true}
+        steps={tourSteps}
+        styles={{
+          options: {
+            zIndex: 10000,
+          },
+        }}
+      />
       <div className="flex justify-between h-full tree-container">
         <TreeD
           data={storyData}
