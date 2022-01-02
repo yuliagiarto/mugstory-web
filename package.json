@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "SET NODE_OPTIONS=--openssl-legacy-provider && next dev",
-    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && next build",
+    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && SET NODE_ENV=production && next build",
     "start": "SET NODE_OPTIONS=--openssl-legacy-provider && next start",
     "lint": "SET NODE_OPTIONS=--openssl-legacy-provider && next lint"
   },
@@ -14,6 +14,7 @@
     "firebase": "^8.9.0",
     "next": "11.0.1",
     "react": "17.0.2",
+    "react-coach-mark": "^1.0.1",
     "react-d3-tree": "^3.1.1",
     "react-dom": "17.0.2",
     "react-google-button": "^0.7.2"

@@ -51,7 +51,7 @@ export default function Login() {
     >
       <div className={`max-w-md w-full ${loginCss.outerCard} p-5 rounded-3xl`}>
         <div className="text-3xl text-gray-700 mb-2">Register</div>
-        <div className="text-xl text-gray-600">Let's get you on board</div>
+        <div className="text-xl text-gray-600">{`Let's get you on board`}</div>
         <div>
           <form
             className="mt-8 space-y-6"

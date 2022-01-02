@@ -4,7 +4,7 @@ import {
   CustomNodeElementProps,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Modal from "../../common/modal";
 
 interface IForeignObjectProps {
@@ -70,7 +70,7 @@ const TreeComponent = (prop: IProp) => {
       setShowModal(!showModal);
       setSelectedNode(node);
     },
-    [showModal, selectedNode]
+    [showModal]
   );
   const handleCloseModal = useCallback(() => {
     setShowModal(false);
@@ -140,7 +140,7 @@ const TreeComponent = (prop: IProp) => {
         </g>
       );
     },
-    [storyData]
+    [openEditModal]
   );
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
