@@ -4,14 +4,11 @@ import {
   CustomNodeElementProps,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Modal from "../../common/modal";
-import Joyride, {
-  CallBackProps,
-  STATUS,
-  Step,
-  StoreHelpers,
-} from "react-joyride";
+import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
+import { firestore, firebase } from "../../../../src/firebase";
+import { Story, storyConverter } from "../../../../src/types/story";
 
 interface IForeignObjectProps {
   width: number;
@@ -182,6 +179,25 @@ const TreeComponent = (prop: IProp) => {
     [setRun]
   );
   // End Tour Guide
+
+  // Firebase section
+  const [stories, setStories] = useState([] as Story[]);
+  const stateHelperFunction = (stories: Story[]) => {
+    //update state here
+    setStories(stories);
+    console.log(stories);
+  };
+  useEffect(() => {
+    const unsubscribe = firestore
+      .collection("story")
+      .withConverter(storyConverter)
+      .onSnapshot((snap) => {
+        const data = snap.docs.map((doc) => doc.data());
+        stateHelperFunction(data);
+      });
+    return () => unsubscribe();
+  }, []);
+  // End of Firebase section
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <>
