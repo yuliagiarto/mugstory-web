@@ -9,6 +9,7 @@ import Modal from "../../common/modal";
 import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { firestore, firebase } from "../../../../src/firebase";
 import { Story, storyConverter } from "../../../../src/types/story";
+import useFirebaseAuth from "../../../../src/helpers/FBAuthApi";
 
 interface IForeignObjectProps {
   width: number;
@@ -181,22 +182,31 @@ const TreeComponent = (prop: IProp) => {
   // End Tour Guide
 
   // Firebase section
+  const { authUser } = useFirebaseAuth();
   const [stories, setStories] = useState([] as Story[]);
   const stateHelperFunction = (stories: Story[]) => {
     //update state here
-    setStories(stories);
-    console.log(stories);
+    if (stories) {
+      setStories(stories);
+      console.log(stories);
+    }
   };
   useEffect(() => {
+    console.log(authUser);
+    if (!authUser) {
+      // auth user not ready
+      return;
+    }
     const unsubscribe = firestore
       .collection("story")
+      .where("creator", "==", authUser?.email)
       .withConverter(storyConverter)
       .onSnapshot((snap) => {
         const data = snap.docs.map((doc) => doc.data());
         stateHelperFunction(data);
       });
     return () => unsubscribe();
-  }, []);
+  }, [authUser]);
   // End of Firebase section
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.

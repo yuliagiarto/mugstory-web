@@ -1,6 +1,7 @@
 import React from "react";
 import { auth } from "../../../src/firebase";
 import { Contents } from "../../../src/helpers/enum";
+import useFirebaseAuth from "../../../src/helpers/FBAuthApi";
 import SidenavButton from "../common/sidenavButton";
 
 interface IProps {
@@ -8,9 +9,9 @@ interface IProps {
 }
 
 export default function SidenavBar(props: IProps) {
+  const { signOut } = useFirebaseAuth();
   const handleLogout = () => {
-    auth
-      .signOut()
+    signOut()
       .then(function () {
         alert("Logout successful");
       })
