@@ -12,19 +12,16 @@ export default function SidenavBar(props: IProps) {
   const { signOut } = useFirebaseAuth();
   const handleLogout = () => {
     signOut()
-      .then(function () {
-        alert("Logout successful");
-      })
+      .then(function () {})
       .catch(function (error) {
-        alert("OOps something went wrong check your console");
-        console.log(error);
+        console.error(error);
       });
   };
 
   const { changeContentHandler } = props;
   return (
     <>
-      <div className="py-12 px-10 w-1/4">
+      <div className="py-12 px-10 w-1/6">
         <div className="flex space-2 items-center border-b-2 pb-4">
           <div>
             <svg

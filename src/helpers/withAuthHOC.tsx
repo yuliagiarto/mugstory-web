@@ -2,6 +2,7 @@ import React, { Component, useEffect, useState } from "react";
 import router from "next/router";
 import { auth } from "../firebase";
 import useFirebaseAuth from "./FBAuthApi";
+import Loader from "../../pages/components/common/loader";
 
 type IProp = {};
 
@@ -20,8 +21,8 @@ const withAuthHOC = (Comp: React.ComponentType) => {
     }, [authUser, loading]);
 
     const renderContent = () => {
-      if (status == "LOADING") {
-        return <h1>Loading ......</h1>;
+      if (status == "LOADING" || loading) {
+        return <Loader />;
       } else if (status == "SIGNED_IN") {
         return <Comp {...props} />;
       }

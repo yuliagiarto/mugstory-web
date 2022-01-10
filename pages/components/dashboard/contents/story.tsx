@@ -10,6 +10,9 @@ import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { firestore, firebase } from "../../../../src/firebase";
 import { Story, storyConverter } from "../../../../src/types/story";
 import useFirebaseAuth from "../../../../src/helpers/FBAuthApi";
+import { Menu, Transition } from "@headlessui/react";
+import SelectOptionsSearch from "../../common/selectOptionsSearch";
+import Loader from "../../common/loader";
 
 interface IForeignObjectProps {
   width: number;
@@ -64,6 +67,7 @@ const TreeComponent = (prop: IProp) => {
       },
     ],
   });
+  const [showSelectOptions, setShowSelectOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
@@ -161,7 +165,7 @@ const TreeComponent = (prop: IProp) => {
       },
       target: ".tree-container",
       title: "Stories Tree",
-      disableBeacon: true,
+      disableBeacon: false,
     },
   ] as Step[]);
   const handleJoyrideCallback = useCallback(
@@ -172,27 +176,24 @@ const TreeComponent = (prop: IProp) => {
       if (finishedStatuses.includes(status)) {
         setRun(false);
       }
-
-      console.groupCollapsed(type);
-      console.log(data);
-      console.groupEnd();
     },
     [setRun]
   );
   // End Tour Guide
 
   // Firebase section
-  const { authUser } = useFirebaseAuth();
+  const { authUser, loading } = useFirebaseAuth();
+  const [showLoader, setShowLoader] = useState(false);
   const [stories, setStories] = useState([] as Story[]);
-  const stateHelperFunction = (stories: Story[]) => {
-    //update state here
-    if (stories) {
-      setStories(stories);
-      console.log(stories);
-    }
-  };
+  const [selectedStory, setSelectedStory] = useState({} as Story);
   useEffect(() => {
-    console.log(authUser);
+    if (!stories || loading) {
+      setShowLoader(true);
+    } else {
+      setShowLoader(false);
+    }
+  }, [stories, loading]);
+  useEffect(() => {
     if (!authUser) {
       // auth user not ready
       return;
@@ -203,7 +204,9 @@ const TreeComponent = (prop: IProp) => {
       .withConverter(storyConverter)
       .onSnapshot((snap) => {
         const data = snap.docs.map((doc) => doc.data());
-        stateHelperFunction(data);
+        if (data) {
+          setStories(data);
+        }
       });
     return () => unsubscribe();
   }, [authUser]);
@@ -211,6 +214,7 @@ const TreeComponent = (prop: IProp) => {
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <>
+      {showLoader && <Loader />}
       {showModal && (
         <Modal
           headerString={`Edit ${selectedNode.name}`}
@@ -232,6 +236,14 @@ const TreeComponent = (prop: IProp) => {
           options: {
             zIndex: 10000,
           },
+        }}
+      />
+      <SelectOptionsSearch
+        defaultSelectedOption="Please choose one of your stories"
+        options={stories.map((x) => x.title!)}
+        onOptionSelectedHandler={(s, i) => {
+          setSelectedStory(stories[i]);
+          console.log(stories[i]);
         }}
       />
       <div className="flex justify-between h-full tree-container">

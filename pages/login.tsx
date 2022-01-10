@@ -30,12 +30,10 @@ export default function Login() {
     auth
       .signInWithPopup(provider)
       .then(() => {
-        alert("You are signed In");
         router.push("/dashboard");
       })
       .catch((err) => {
-        alert("OOps something went wrong check your console");
-        console.log(err);
+        console.error(err);
       });
   };
 
