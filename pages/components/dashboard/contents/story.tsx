@@ -4,7 +4,7 @@ import {
   CustomNodeElementProps,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Modal from "../../common/modal";
 import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
 import { firestore, firebase } from "../../../../src/firebase";
@@ -13,6 +13,8 @@ import useFirebaseAuth from "../../../../src/helpers/FBAuthApi";
 import { Menu, Transition } from "@headlessui/react";
 import SelectOptionsSearch from "../../common/selectOptionsSearch";
 import Loader from "../../common/loader";
+import { getSessionStorageOrDefault } from "../../../../src/helpers/commonFunction";
+import { SS_SHOW_TOUR_KEY } from "../../../../src/helpers/constants";
 
 interface IForeignObjectProps {
   width: number;
@@ -152,7 +154,7 @@ const TreeComponent = (prop: IProp) => {
   );
 
   // Tour Guide
-  const [run, setRun] = useState(true);
+  const [run, setRun] = useState(false);
   const [tourSteps, setTourSteps] = useState([
     {
       content:
@@ -172,13 +174,28 @@ const TreeComponent = (prop: IProp) => {
     (data: CallBackProps) => {
       const { status, type } = data;
       const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
       if (finishedStatuses.includes(status)) {
         setRun(false);
+        sessionStorage.setItem(SS_SHOW_TOUR_KEY, "false");
       }
     },
     [setRun]
   );
+  useEffect(() => {
+    const isFirstTime = getSessionStorageOrDefault<boolean>(
+      SS_SHOW_TOUR_KEY,
+      true
+    );
+    if (isFirstTime) {
+      setRun(true);
+    } else {
+      setRun(false);
+    }
+    return () => {
+      document.getElementById("react-joyride-portal")?.remove();
+      document.getElementById("react-joyride-step-0")?.remove();
+    };
+  }, []);
   // End Tour Guide
 
   // Firebase section
@@ -210,6 +227,16 @@ const TreeComponent = (prop: IProp) => {
       });
     return () => unsubscribe();
   }, [authUser]);
+  const getOptions = useCallback(() => {
+    return stories.map((x) => x.title!);
+  }, [stories]);
+  const optionSelectedHandler = useCallback(
+    (s, i) => {
+      setSelectedStory(stories[i]);
+      console.log(stories[i]);
+    },
+    [setSelectedStory, stories]
+  );
   // End of Firebase section
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
@@ -226,25 +253,19 @@ const TreeComponent = (prop: IProp) => {
           <form></form>
         </Modal>
       )}
-      <Joyride
-        callback={handleJoyrideCallback}
-        continuous={false}
-        run={run}
-        showSkipButton={true}
-        steps={tourSteps}
-        styles={{
-          options: {
-            zIndex: 10000,
-          },
-        }}
-      />
+      {run && (
+        <Joyride
+          callback={handleJoyrideCallback}
+          continuous={false}
+          run={run}
+          showSkipButton={true}
+          steps={tourSteps}
+        />
+      )}
       <SelectOptionsSearch
         defaultSelectedOption="Please choose one of your stories"
-        options={stories.map((x) => x.title!)}
-        onOptionSelectedHandler={(s, i) => {
-          setSelectedStory(stories[i]);
-          console.log(stories[i]);
-        }}
+        options={getOptions()}
+        onOptionSelectedHandler={optionSelectedHandler}
       />
       <div className="flex justify-between h-full tree-container">
         <TreeD
@@ -279,4 +300,4 @@ const TreeComponent = (prop: IProp) => {
 };
 
 interface IProp {}
-export default TreeComponent;
+export default React.memo(TreeComponent);

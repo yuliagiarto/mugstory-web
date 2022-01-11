@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 
 function SelectOptionsSearch(props: IProp) {
   const {
@@ -138,5 +138,24 @@ type IProp = {
   options: string[];
   onOptionSelectedHandler: (s: string, i: number) => void;
 };
-
-export default SelectOptionsSearch;
+function areEqual(
+  prevProps: Readonly<IProp>,
+  nextProps: Readonly<IProp>
+): boolean {
+  /*
+  return true if passing nextProps to render would return
+  the same result as passing prevProps to render,
+  otherwise return false
+  */
+  const diff = prevProps.options
+    .filter((x) => !nextProps.options.includes(x))
+    .concat(nextProps.options.filter((x) => !prevProps.options.includes(x)));
+  return (
+    diff.length == 0 &&
+    prevProps.options.length === nextProps.options.length &&
+    prevProps.title === nextProps.title &&
+    prevProps.defaultSelectedOption === nextProps.defaultSelectedOption &&
+    prevProps.defaultShowOptions === nextProps.defaultShowOptions
+  );
+}
+export default React.memo(SelectOptionsSearch, areEqual);

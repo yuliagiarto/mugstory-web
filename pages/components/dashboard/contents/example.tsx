@@ -1,3 +1,5 @@
+import React from "react";
+
 const Example = (prop: IProp) => {
   return (
     <>
@@ -154,4 +156,4 @@ const Example = (prop: IProp) => {
 };
 
 interface IProp {}
-export default Example;
+export default React.memo(Example);
