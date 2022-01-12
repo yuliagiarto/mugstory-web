@@ -2,6 +2,7 @@ import TreeD from "react-d3-tree";
 import { useContainerSize } from "../../../../src/helpers/windowSize";
 import {
   CustomNodeElementProps,
+  RawNodeDatum,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -68,7 +69,7 @@ const TreeComponent = (prop: IProp) => {
         ],
       },
     ],
-  });
+  } as RawNodeDatum);
   const [showSelectOptions, setShowSelectOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
@@ -104,8 +105,8 @@ const TreeComponent = (prop: IProp) => {
             <foreignObject {...foreignObjectProps}>
               <div className={`w-[${foreignObjectProps.width}px] mx-auto`}>
                 <div className="overflow-hidden shadow-md">
-                  <div className="px-6 py-4 bg-white border-b border-gray-200 font-bold uppercase">
-                    {nodeDatum.name}
+                  <div className="px-6 py-4 bg-white border-b border-gray-200 text-base">
+                    <p>{nodeDatum.name}</p>
                   </div>
                 </div>
               </div>
@@ -125,13 +126,13 @@ const TreeComponent = (prop: IProp) => {
           <foreignObject {...foreignObjectProps}>
             <div className={`w-[${foreignObjectProps.width}px] mx-auto`}>
               <div className="overflow-hidden shadow-md">
-                <div className="px-6 py-4 bg-white border-b border-gray-200 font-bold uppercase">
-                  {nodeDatum.name}
+                <div className="px-6 py-4 bg-white border-b border-gray-200 text-base">
+                  <p>{nodeDatum.name}</p>
                 </div>
 
-                {nodeDatum.attributes?.content && (
+                {nodeDatum.attributes?.narration && (
                   <div className="p-6 bg-white border-b border-gray-200">
-                    {nodeDatum.attributes?.content}
+                    {nodeDatum.attributes?.narration}
                   </div>
                 )}
 
@@ -202,7 +203,7 @@ const TreeComponent = (prop: IProp) => {
   const { authUser, loading } = useFirebaseAuth();
   const [showLoader, setShowLoader] = useState(false);
   const [stories, setStories] = useState([] as Story[]);
-  const [selectedStory, setSelectedStory] = useState({} as Story);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(-1);
   useEffect(() => {
     if (!stories || loading) {
       setShowLoader(true);
@@ -232,11 +233,26 @@ const TreeComponent = (prop: IProp) => {
   }, [stories]);
   const optionSelectedHandler = useCallback(
     (s, i) => {
-      setSelectedStory(stories[i]);
-      console.log(stories[i]);
+      setSelectedStoryIndex(i);
     },
-    [setSelectedStory, stories]
+    [setSelectedStoryIndex]
   );
+  useEffect(() => {
+    // Feed story data with selectedStory
+    if (selectedStoryIndex < 0) return;
+    const selectedStory = stories[selectedStoryIndex];
+    const selectedStoryData = {
+      name: selectedStory.creator,
+      children: [
+        {
+          name: selectedStory.title,
+          attributes: { narration: selectedStory.narration },
+        },
+      ],
+    } as RawNodeDatum;
+    setStoryData({ ...storyData, ...selectedStoryData });
+    return () => {};
+  }, [selectedStoryIndex, setStoryData, stories]);
   // End of Firebase section
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
