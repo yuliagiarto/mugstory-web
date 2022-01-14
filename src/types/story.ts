@@ -1,4 +1,5 @@
 export type Story = {
+  id: string;
   content?: string;
   image?: string;
   title?: string;

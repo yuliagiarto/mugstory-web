@@ -16,6 +16,7 @@ import SelectOptionsSearch from "../../common/selectOptionsSearch";
 import Loader from "../../common/loader";
 import { getSessionStorageOrDefault } from "../../../../src/helpers/commonFunction";
 import { SS_SHOW_TOUR_KEY } from "../../../../src/helpers/constants";
+import { Choice, choiceConverter } from "../../../../src/types/choice";
 
 interface IForeignObjectProps {
   width: number;
@@ -203,6 +204,7 @@ const TreeComponent = (prop: IProp) => {
   const { authUser, loading } = useFirebaseAuth();
   const [showLoader, setShowLoader] = useState(false);
   const [stories, setStories] = useState([] as Story[]);
+  const [choices, setChoices] = useState([] as Choice[]);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(-1);
   useEffect(() => {
     if (!stories || loading) {
@@ -221,7 +223,10 @@ const TreeComponent = (prop: IProp) => {
       .where("creator", "==", authUser?.email)
       .withConverter(storyConverter)
       .onSnapshot((snap) => {
-        const data = snap.docs.map((doc) => doc.data());
+        const data = snap.docs.map((doc) => {
+          const storyT = doc.data();
+          return { ...storyT, id: doc.id } as Story;
+        });
         if (data) {
           setStories(data);
         }
@@ -241,18 +246,68 @@ const TreeComponent = (prop: IProp) => {
     // Feed story data with selectedStory
     if (selectedStoryIndex < 0) return;
     const selectedStory = stories[selectedStoryIndex];
+    const choiceSubs = firestore
+      .collection(`story/${selectedStory.id}/choices`)
+      .withConverter(choiceConverter)
+      .onSnapshot((snap) => {
+        const data = snap.docs.map((doc) => {
+          const choiceT = doc.data();
+          return { ...choiceT, id: doc.id } as Choice;
+        });
+        if (data) {
+          setChoices(data);
+        }
+      });
+    return () => choiceSubs();
+  }, [selectedStoryIndex]);
+  useEffect(() => {
+    // Feed story data with selectedStory
+    if (selectedStoryIndex < 0 || !choices || choices.length < 1) return;
+    const selectedStory = stories[selectedStoryIndex];
+    const detailChoiceData = createChoiceTree(choices, 1);
     const selectedStoryData = {
       name: selectedStory.creator,
       children: [
         {
           name: selectedStory.title,
           attributes: { narration: selectedStory.narration },
+          children: detailChoiceData,
         },
       ],
     } as RawNodeDatum;
     setStoryData({ ...storyData, ...selectedStoryData });
-    return () => {};
-  }, [selectedStoryIndex, setStoryData, stories]);
+  }, [choices, stories, setStoryData]);
+  const createChoiceTree = (
+    choicesData: Choice[],
+    level: number,
+    parentId?: string
+  ): RawNodeDatum[] => {
+    if (choicesData.length === 0) {
+      return [];
+    }
+    let currentLevelChoice = choicesData.filter((x) => x.level === level);
+    if (parentId) {
+      currentLevelChoice = currentLevelChoice.filter(
+        (x) => x.parents && x.parents.findIndex((y) => y === parentId) > -1
+      );
+    }
+    let currentData = [] as RawNodeDatum[];
+    const nextLevel = ++level;
+    let copyChoice = [...choicesData];
+    currentLevelChoice.forEach((ch) => {
+      // Remove used choice
+      var index = copyChoice.indexOf(ch);
+      if (index > -1) {
+        copyChoice.splice(index, 1);
+      }
+      currentData.push({
+        name: ch.caption,
+        attributes: { content: ch.content },
+        children: createChoiceTree(copyChoice, nextLevel, ch.id),
+      } as RawNodeDatum);
+    });
+    return currentData;
+  };
   // End of Firebase section
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
