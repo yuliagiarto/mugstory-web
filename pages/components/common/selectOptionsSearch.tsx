@@ -73,7 +73,7 @@ function SelectOptionsSearch(props: IProp) {
         <div className="m-4">
           <div className="relative">
             <button
-              className="bg-blue-600 hover:bg-blue-400 p-3 rounded text-white shadow-inner w-full"
+              className="bg-amber-400 hover:bg-amber-400 hover:bg-opacity-70 p-3 rounded text-white shadow-inner w-full"
               onClick={() => {
                 onSelectButtonClickHandler && onSelectButtonClickHandler();
                 setShowOptions(!showOptions);

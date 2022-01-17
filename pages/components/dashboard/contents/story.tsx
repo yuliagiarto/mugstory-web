@@ -99,9 +99,9 @@ const TreeComponent = (prop: IProp) => {
         return (
           <g strokeWidth={0} stroke="#8a8a8a">
             <>
-              <circle r={18} fill="#578aef" />
+              <circle r={18} fill="#f4a261" />
               <circle r={16} fill="#fff" />
-              <circle r={14} fill="#578aef" />
+              <circle r={14} fill="#f4a261" />
             </>
             <foreignObject {...foreignObjectProps}>
               <div className={`w-[${foreignObjectProps.width}px] mx-auto`}>
@@ -119,9 +119,9 @@ const TreeComponent = (prop: IProp) => {
       return (
         <g onClick={toggleNode} strokeWidth={0}>
           <>
-            <circle r={18} fill="#578aef" />
+            <circle r={18} fill="#f4a261" />
             <circle r={16} fill="#fff" />
-            <circle r={14} fill="#578aef" />
+            <circle r={14} fill="#f4a261" />
           </>
           {/* `foreignObject` requires width & height to be explicitly set. */}
           <foreignObject {...foreignObjectProps}>
@@ -139,7 +139,7 @@ const TreeComponent = (prop: IProp) => {
 
                 <div className="p-6 bg-white border-gray-200 text-right">
                   <a
-                    className="bg-blue-500 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-blue-400 rounded uppercase"
+                    className="bg-amber-400 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-amber-400 hover:bg-opacity-70 rounded uppercase"
                     href="#"
                     onClick={(e) => openEditModal(nodeDatum, e)}
                   >
