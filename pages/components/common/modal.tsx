@@ -26,7 +26,7 @@ const Modal = (props: IProps) => {
       >
         <div className="bg-white opacity-100 rounded-lg md:max-w-md md:mx-auto p-4 fixed inset-x-0 bottom-0 z-50 mb-4 mx-4 md:relative">
           <div className="md:flex items-center">
-            <div className="mt-4 md:mt-0 md:ml-6 text-center md:text-left">
+            <div className="text-center md:text-left">
               <p className="font-bold">{headerString}</p>
               {children}
             </div>

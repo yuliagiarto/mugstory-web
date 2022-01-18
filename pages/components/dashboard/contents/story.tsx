@@ -31,18 +31,18 @@ interface ITreeCreationParameter {
 
 const TreeComponent = (prop: IProp) => {
   const [storyData, setStoryData] = useState({
-    name: "Author",
+    name: "Example Author",
     children: [
       {
-        name: "Title1",
+        name: "Example Title1",
         attributes: {
           content: "Content",
         },
         children: [
           {
-            name: "Choice1",
+            name: "Example Choice1",
             attributes: {
-              content: "Content1",
+              content: "Example Content1",
             },
             children: [
               {
@@ -76,6 +76,9 @@ const TreeComponent = (prop: IProp) => {
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
   const nodeSize = { x: width / 4, y: height / 3 };
+  const isTitleNode = (node: RawNodeDatum): boolean => {
+    return node.attributes?.narration !== undefined;
+  };
   const openEditModal = useCallback(
     (node: TreeNodeDatum, e: React.MouseEvent<HTMLElement>) => {
       e.stopPropagation();
@@ -107,7 +110,11 @@ const TreeComponent = (prop: IProp) => {
               <div className={`w-[${foreignObjectProps.width}px] mx-auto`}>
                 <div className="overflow-hidden shadow-md">
                   <div className="px-6 py-4 bg-white border-b border-gray-200 text-base">
-                    <p>{nodeDatum.name}</p>
+                    <p className="break-words">
+                      <i>
+                        <b>Creator:</b> {nodeDatum.name}
+                      </i>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -130,10 +137,11 @@ const TreeComponent = (prop: IProp) => {
                 <div className="px-6 py-4 bg-white border-b border-gray-200 text-base">
                   <p>{nodeDatum.name}</p>
                 </div>
-
-                {nodeDatum.attributes?.narration && (
+                {nodeDatum.attributes?.content && (
                   <div className="p-6 bg-white border-b border-gray-200">
-                    {nodeDatum.attributes?.narration}
+                    <p className="line-clamp-3">
+                      {nodeDatum.attributes?.content}
+                    </p>
                   </div>
                 )}
 
@@ -270,7 +278,10 @@ const TreeComponent = (prop: IProp) => {
       children: [
         {
           name: selectedStory.title,
-          attributes: { narration: selectedStory.narration },
+          attributes: {
+            narration: selectedStory.narration,
+            content: selectedStory.content,
+          },
           children: detailChoiceData,
         },
       ],
@@ -315,13 +326,28 @@ const TreeComponent = (prop: IProp) => {
       {showLoader && <Loader />}
       {showModal && (
         <Modal
-          headerString={`Edit ${selectedNode.name}`}
+          headerString={`Edit`}
           cancelButtonString="Cancel"
           onCancelHandler={handleCloseModal}
           onSubmitHandler={() => {}}
           submitButtonString="Submit"
         >
-          <form></form>
+          <form>
+            <label
+              className="block text-gray-700 text-sm font-bold mb-2"
+              htmlFor="name"
+            >
+              {isTitleNode(selectedNode) ? "Title" : "Choice"}
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+              value={selectedNode.name}
+              onChange={() => {}}
+              placeholder={isTitleNode(selectedNode) ? "Title" : "Choice"}
+            />
+          </form>
         </Modal>
       )}
       {run && (
@@ -352,14 +378,14 @@ const TreeComponent = (prop: IProp) => {
             renderForeignObjectNode({
               customeNodeParam,
               foreignObjectProps: {
-                width: nodeSize.x * 0.75,
+                width: nodeSize.x,
                 height: nodeSize.y,
                 y: 32,
-                x: -(nodeSize.x * 0.75) / 2,
+                x: -nodeSize.x / 2,
               },
             })
           }
-          nodeSize={{ x: nodeSize.x, y: nodeSize.y }}
+          nodeSize={{ x: nodeSize.x * 1.25, y: nodeSize.y * 1.25 }}
           rootNodeClassName="node__root"
           initialDepth={2}
           branchNodeClassName="node__branch"
