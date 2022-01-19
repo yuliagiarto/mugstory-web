@@ -25,12 +25,12 @@ export default function SidenavBar(props: IProps) {
     <>
       <div className="py-12 px-6 w-1/6">
         <div className="flex space-2 items-center border-b-2 pb-4">
-          <div className="w-1/4 h-1/4">
+          <div className="w-fit h-fit">
             <Image src={logo} width={50} height={50} objectFit="cover"></Image>
           </div>
-          <div className="ml-3">
-            <h1 className="text-3xl font-bold text-amber-500">Mugstory</h1>
-            <p className="text-center text-sm text-amber-400 mt-1 font-serif">
+          <div className="ml-3 w-full item-center">
+            <p className="text-3xl font-bold text-amber-500">Mugstory</p>
+            <p className="text-left text-sm text-amber-400 mt-1 font-serif">
               DASHBOARD
             </p>
           </div>

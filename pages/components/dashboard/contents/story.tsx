@@ -71,7 +71,6 @@ const TreeComponent = (prop: IProp) => {
       },
     ],
   } as RawNodeDatum);
-  const [showSelectOptions, setShowSelectOptions] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
@@ -333,20 +332,22 @@ const TreeComponent = (prop: IProp) => {
           submitButtonString="Submit"
         >
           <form>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="name"
-            >
-              {isTitleNode(selectedNode) ? "Title" : "Choice"}
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
-              type="text"
-              value={selectedNode.name}
-              onChange={() => {}}
-              placeholder={isTitleNode(selectedNode) ? "Title" : "Choice"}
-            />
+            <div className="mb-4">
+              <label
+                className="block text-gray-700 text-sm mb-2"
+                htmlFor="name"
+              >
+                {isTitleNode(selectedNode) ? "Title" : "Choice"}
+              </label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="name"
+                type="text"
+                value={selectedNode.name}
+                onChange={() => {}}
+                placeholder={isTitleNode(selectedNode) ? "Title" : "Choice"}
+              />
+            </div>
           </form>
         </Modal>
       )}
