@@ -5,18 +5,23 @@ import {
   RawNodeDatum,
   TreeNodeDatum,
 } from "react-d3-tree/lib/types/common";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Modal from "../../common/modal";
 import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
-import { firestore, firebase } from "../../../../src/firebase";
+import { firestore } from "../../../../src/firebase";
 import { Story, storyConverter } from "../../../../src/types/story";
 import useFirebaseAuth from "../../../../src/helpers/FBAuthApi";
-import { Menu, Transition } from "@headlessui/react";
 import SelectOptionsSearch from "../../common/selectOptionsSearch";
 import Loader from "../../common/loader";
 import { getSessionStorageOrDefault } from "../../../../src/helpers/commonFunction";
 import { SS_SHOW_TOUR_KEY } from "../../../../src/helpers/constants";
 import { Choice, choiceConverter } from "../../../../src/types/choice";
+import MInput from "../../common/mInput";
+import {
+  StateType,
+  UseForm,
+  ValidationType,
+} from "../../../../src/hooks/UseForm";
 
 interface IForeignObjectProps {
   width: number;
@@ -319,6 +324,35 @@ const TreeComponent = (prop: IProp) => {
     return currentData;
   };
   // End of Firebase section
+
+  // Start Form Section
+  const titleLabel = isTitleNode(selectedNode) ? "Title" : "Choice";
+  const { form, onChangeHandler, onBlurHandler, updateForm } = UseForm({
+    title: {
+      value: "",
+      validation: { [ValidationType.REQUIRED]: `${titleLabel} is required!` },
+      errorMsg: "",
+    },
+    content: {
+      value: "",
+      validation: { [ValidationType.REQUIRED]: `Content is required!` },
+      errorMsg: "",
+    },
+  });
+  useEffect(() => {
+    if (!selectedNode || !selectedNode.attributes) return;
+    let newForm: StateType = { ...form };
+    for (let key in form) {
+      let value = selectedNode.attributes[key]
+        ? selectedNode.attributes[key].toString()
+        : "";
+      if (key === "title") value = selectedNode.name;
+      newForm[key].value = value;
+    }
+    updateForm(newForm);
+  }, [selectedNode]);
+
+  // End Form
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <>
@@ -333,19 +367,33 @@ const TreeComponent = (prop: IProp) => {
         >
           <form>
             <div className="mb-4">
-              <label
-                className="block text-gray-700 text-sm mb-2"
-                htmlFor="name"
-              >
-                {isTitleNode(selectedNode) ? "Title" : "Choice"}
-              </label>
-              <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="name"
+              <MInput
                 type="text"
-                value={selectedNode.name}
-                onChange={() => {}}
-                placeholder={isTitleNode(selectedNode) ? "Title" : "Choice"}
+                name="title"
+                errortext={form.title.errorMsg}
+                value={form.title.value}
+                onBlur={onBlurHandler}
+                onChange={onChangeHandler}
+                label={titleLabel}
+                labelclass={["text-gray-700", "text-sm"]}
+                inputclass={[
+                  "text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+                ]}
+                placeholder={titleLabel}
+              />
+              <MInput
+                type="text"
+                name="content"
+                errortext={form.content.errorMsg}
+                value={form.content.value}
+                onBlur={onBlurHandler}
+                onChange={onChangeHandler}
+                label="Content"
+                labelclass={["text-gray-700", "text-sm"]}
+                inputclass={[
+                  "text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+                ]}
+                placeholder="Content"
               />
             </div>
           </form>
