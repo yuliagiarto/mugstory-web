@@ -317,7 +317,7 @@ const TreeComponent = (prop: IProp) => {
       }
       currentData.push({
         name: ch.caption,
-        attributes: { content: ch.content },
+        attributes: { content: ch.content, id: ch.id },
         children: createChoiceTree(copyChoice, nextLevel, ch.id),
       } as RawNodeDatum);
     });
@@ -327,18 +327,19 @@ const TreeComponent = (prop: IProp) => {
 
   // Start Form Section
   const titleLabel = isTitleNode(selectedNode) ? "Title" : "Choice";
-  const { form, onChangeHandler, onBlurHandler, updateForm } = UseForm({
-    title: {
-      value: "",
-      validation: { [ValidationType.REQUIRED]: `${titleLabel} is required!` },
-      errorMsg: "",
-    },
-    content: {
-      value: "",
-      validation: { [ValidationType.REQUIRED]: `Content is required!` },
-      errorMsg: "",
-    },
-  });
+  const { form, onChangeHandler, onBlurHandler, updateForm, isFormValid } =
+    UseForm({
+      title: {
+        value: "",
+        validation: { [ValidationType.REQUIRED]: `${titleLabel} is required!` },
+        errorMsg: "",
+      },
+      content: {
+        value: "",
+        validation: { [ValidationType.REQUIRED]: `Content is required!` },
+        errorMsg: "",
+      },
+    });
   useEffect(() => {
     if (!selectedNode || !selectedNode.attributes) return;
     let newForm: StateType = { ...form };
@@ -351,7 +352,36 @@ const TreeComponent = (prop: IProp) => {
     }
     updateForm(newForm);
   }, [selectedNode]);
-
+  const submitEditFormHandler = useCallback(() => {
+    if (
+      !isFormValid() ||
+      selectedStoryIndex === -1 ||
+      selectedNode.attributes === undefined
+    )
+      return;
+    // valid form data, update firebase
+    const selectedStory = stories[selectedStoryIndex];
+    let firebaseQuery = "";
+    let firebaseNewData = {};
+    let docId = "";
+    if (isTitleNode(selectedNode)) {
+      firebaseQuery = `story`;
+      firebaseNewData = {
+        content: form.content.value,
+        title: form.title.value,
+      } as Story;
+      docId = selectedStory.id;
+    } else {
+      firebaseQuery = `story/${selectedStory.id}/choices`;
+      firebaseNewData = {
+        caption: form.title.value,
+        content: form.content.value,
+        id: selectedNode.attributes!.id,
+      } as Choice;
+      docId = selectedNode.attributes?.id as string;
+    }
+    firestore.collection(firebaseQuery).doc(docId).update(firebaseNewData);
+  }, [isFormValid, form, selectedStoryIndex, selectedNode]);
   // End Form
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
@@ -362,7 +392,7 @@ const TreeComponent = (prop: IProp) => {
           headerString={`Edit`}
           cancelButtonString="Cancel"
           onCancelHandler={handleCloseModal}
-          onSubmitHandler={() => {}}
+          onSubmitHandler={submitEditFormHandler}
           submitButtonString="Submit"
         >
           <form>
