@@ -62,12 +62,11 @@ function SelectOptionsSearch(props: IProp) {
   );
   return (
     <>
-      <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white absolute">
+      <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white md:absolute w-fill">
         {title && (
           <>
-            <p className="p-4">Countries</p>
+            <p className="p-4">{title}</p>
             <div className="border-b-2 m-0"></div>
-            <p className="p-4">Select Country: </p>
           </>
         )}
         <div className="m-4">

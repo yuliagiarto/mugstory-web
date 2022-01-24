@@ -34,9 +34,9 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen flex">
+    <div className="md:min-h-screen md:flex">
       <SidenavBar changeContentHandler={changeContentHandler} />
-      <div className="bg-amber-200 bg-opacity-30 flex-grow py-12 px-10">
+      <div className="bg-amber-200 bg-opacity-30 md:flex-grow py-12 px-10 min-h-screen">
         {getContent()}
       </div>
     </div>

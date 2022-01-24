@@ -79,7 +79,10 @@ const TreeComponent = (prop: IProp) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
-  const nodeSize = { x: width / 4, y: height / 3 };
+  const nodeSize =
+    width < 500
+      ? { x: width / 2, y: height / 3 }
+      : { x: width / 4, y: height / 3 };
   const isTitleNode = (node: RawNodeDatum): boolean => {
     return node.attributes?.narration !== undefined;
   };
@@ -443,16 +446,20 @@ const TreeComponent = (prop: IProp) => {
         options={getOptions()}
         onOptionSelectedHandler={optionSelectedHandler}
       />
-      <div className="flex justify-between h-full tree-container">
+      <div className="flex justify-between md:h-full tree-container h-screen">
         <TreeD
           data={storyData}
           shouldCollapseNeighborNodes={true}
           enableLegacyTransitions={true}
           zoomable={true}
           scaleExtent={{ max: 2, min: 0.1 }}
-          orientation={"horizontal"}
+          orientation={width < 500 ? "vertical" : "horizontal"}
           pathFunc={"step"}
-          translate={{ x: width / 5, y: height / 4 }}
+          translate={
+            width < 500
+              ? { x: width / 2, y: 50 }
+              : { x: width / 5, y: height / 4 }
+          }
           renderCustomNodeElement={(customeNodeParam) =>
             renderForeignObjectNode({
               customeNodeParam,
@@ -464,7 +471,11 @@ const TreeComponent = (prop: IProp) => {
               },
             })
           }
-          nodeSize={{ x: nodeSize.x * 1.25, y: nodeSize.y * 1.25 }}
+          nodeSize={
+            width < 500
+              ? { x: nodeSize.x * 1.25, y: nodeSize.y }
+              : { x: nodeSize.x * 1.25, y: nodeSize.y * 1.25 }
+          }
           rootNodeClassName="node__root"
           initialDepth={2}
           branchNodeClassName="node__branch"
