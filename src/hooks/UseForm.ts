@@ -3,13 +3,15 @@ import { useState, useCallback } from "react";
 export enum ValidationType {
   REQUIRED = "Req",
   MAX5 = "Max5",
+  CONFIRM = "Confirm",
 }
 const ValidationErrorText: { [key: string]: string } = {
   Req: "This field is required",
   Max5: "Maximum 5",
+  Confirm: "Value is different from password field",
 };
 type ValidationFunctionType = {
-  [key: string]: (value: string) => boolean;
+  [key: string]: (value: string, compareValue?: string) => boolean;
 };
 export type StateType = {
   [key: string]: StateTypeDetail;
@@ -25,13 +27,14 @@ const ValidationFunction: ValidationFunctionType = {
     return !!value.trim();
   },
   Max5: (value: string) => value.length <= 5,
+  Confirm: (value: string, compareValue?: string) => value === compareValue,
 };
-const validate = (rule: string, value: string) => {
+const validate = (rule: string, value: string, compareValue?: string) => {
   if (typeof ValidationFunction[rule] !== "function") {
     console.error("validation rule invalid: ", rule);
     return false;
   }
-  return ValidationFunction[rule](value);
+  return ValidationFunction[rule](value, compareValue);
 };
 //consider to use form input dynamically so we can modify the for in runtime by manipulating the state
 //expected ```name: { value: "", validation: [ValidationType.REQUIRED], errorMsg: "" }```
@@ -59,8 +62,10 @@ export const UseForm = (initialVal: StateType) => {
         : Object.keys(updatedValue.validation);
       for (let idx in iterableRules) {
         const rule = iterableRules[idx];
+        const pass =
+          updatedState["password"]?.value || updatedState["Password"]?.value;
         //if true then valid
-        if (!validate(rule, value)) {
+        if (!validate(rule, value, pass)) {
           // if not valid, set error message
           updatedValue.errorMsg = Array.isArray(updatedValue.validation)
             ? ValidationErrorText[rule]

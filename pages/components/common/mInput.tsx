@@ -25,7 +25,7 @@ export default function MInput(props: IProp) {
           {...props}
         />
       }
-      {errortext ? <p className="text-red-500 italic">{errortext}</p> : null}
+      {errortext ? <p className="text-red-500">{errortext}</p> : null}
     </>
   );
 }
