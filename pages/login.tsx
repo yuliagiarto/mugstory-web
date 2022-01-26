@@ -13,8 +13,6 @@ import Toaster, { ToastType } from "./components/common/toaster";
 export default function Login() {
   const fbAuth = useFirebaseAuth();
   const router = useRouter();
-  let [registerEmail, setRegisterEmail] = useState("");
-  let [registerPassword, setRegisterPassword] = useState("");
 
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState("");
@@ -44,7 +42,6 @@ export default function Login() {
 
   let handleGoogleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isFormValid()) return;
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
     auth
