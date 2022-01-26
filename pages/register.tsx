@@ -1,4 +1,5 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
+import router from "next/router";
 import React, { useEffect, useState } from "react";
 import useFirebaseAuth from "../src/helpers/FBAuthApi";
 import { UseForm, ValidationType } from "../src/hooks/UseForm";
@@ -20,7 +21,10 @@ export default function Register() {
     fbAuth
       .createUserWithEmailAndPassword(form.email.value, form.password.value)
       .then((user) => {
-        console.log(user);
+        setToastType(ToastType.SUCCESS);
+        setToastTitle("Success Register");
+        setToastText(`Success Register ${user.user?.email}`);
+        router.push("/dashboard");
       })
       .catch((reason) => {
         setToastTitle("Error Register");
@@ -32,7 +36,7 @@ export default function Register() {
     if (toastTitle && toastText) {
       setShowToast(true);
     }
-  }, [toastText, toastTitle]);
+  }, [toastText, toastTitle, toastType]);
 
   const { form, onChangeHandler, onBlurHandler, isFormValid } = UseForm({
     email: {
@@ -42,7 +46,10 @@ export default function Register() {
     },
     password: {
       value: "",
-      validation: { [ValidationType.REQUIRED]: `Password is required!` },
+      validation: {
+        [ValidationType.REQUIRED]: `Password is required!`,
+        [ValidationType.MIN6]: `Minimum Password length is 6!`,
+      },
       errorMsg: "",
     },
     confirm: {

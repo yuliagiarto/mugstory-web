@@ -2,12 +2,12 @@ import { useState, useCallback } from "react";
 
 export enum ValidationType {
   REQUIRED = "Req",
-  MAX5 = "Max5",
+  MIN6 = "Min6",
   CONFIRM = "Confirm",
 }
 const ValidationErrorText: { [key: string]: string } = {
   Req: "This field is required",
-  Max5: "Maximum 5",
+  Min6: "Maximum 5",
   Confirm: "Value is different from password field",
 };
 type ValidationFunctionType = {
@@ -26,7 +26,7 @@ const ValidationFunction: ValidationFunctionType = {
   Req: (value: string) => {
     return !!value.trim();
   },
-  Max5: (value: string) => value.length <= 5,
+  Min6: (value: string) => value.length >= 6,
   Confirm: (value: string, compareValue?: string) => value === compareValue,
 };
 const validate = (rule: string, value: string, compareValue?: string) => {
