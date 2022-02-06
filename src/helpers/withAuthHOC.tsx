@@ -1,43 +1,34 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import router from "next/router";
 import { auth } from "../firebase";
+import useFirebaseAuth from "./FBAuthApi";
+import Loader from "../../pages/components/common/loader";
 
-interface IProps {}
-interface IState {
-  status?: string;
-}
+type IProp = {};
 
 const withAuthHOC = (Comp: React.ComponentType) => {
-  return class extends React.Component<IProps, IState> {
-    constructor(props: IProps) {
-      super(props);
-      this.state = {
-        status: "LOADING",
-      };
-    }
-    componentDidMount() {
-      auth.onAuthStateChanged((authUser) => {
-        console.log(authUser);
-        if (authUser) {
-          this.setState({
-            status: "SIGNED_IN",
-          });
-        } else {
-          router.push("/login");
-        }
-      });
-    }
-    renderContent() {
-      const { status } = this.state;
-      if (status == "LOADING") {
-        return <h1>Loading ......</h1>;
-      } else if (status == "SIGNED_IN") {
-        return <Comp {...this.props} />;
+  return (props: IProp) => {
+    const [status, setStatus] = useState("LOADING");
+    const { authUser, loading } = useFirebaseAuth();
+
+    useEffect(() => {
+      if (authUser?.email) {
+        setStatus("SIGNED_IN");
+      } else if (!loading) {
+        router.push("/login");
       }
-    }
-    render() {
-      return <React.Fragment>{this.renderContent()}</React.Fragment>;
-    }
+      return () => {};
+    }, [authUser, loading]);
+
+    const renderContent = () => {
+      if (status == "LOADING" || loading) {
+        return <Loader />;
+      } else if (status == "SIGNED_IN") {
+        return <Comp {...props} />;
+      }
+    };
+
+    return <React.Fragment>{renderContent()}</React.Fragment>;
   };
 };
 

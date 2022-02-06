@@ -3,20 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "SET NODE_OPTIONS=--openssl-legacy-provider && next dev",
+    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && SET NODE_ENV=production && next build",
+    "start": "SET NODE_OPTIONS=--openssl-legacy-provider && next start",
+    "lint": "SET NODE_OPTIONS=--openssl-legacy-provider && next lint"
   },
   "dependencies": {
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
+    "@tailwindcss/line-clamp": "^0.3.1",
     "firebase": "^8.9.0",
     "next": "11.0.1",
     "react": "17.0.2",
+    "react-coach-mark": "^1.0.1",
     "react-d3-tree": "^3.1.1",
     "react-dom": "17.0.2",
-    "react-google-button": "^0.7.2"
+    "react-google-button": "^0.7.2",
+    "react-joyride": "^2.3.2"
   },
   "devDependencies": {
     "@types/firebase": "^3.2.1",
