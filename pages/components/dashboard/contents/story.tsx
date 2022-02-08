@@ -98,9 +98,7 @@ const TreeComponent = (prop: IProp) => {
     );
     const handleCloseModal = useCallback(() => {
         setShowModal(false);
-        let newForm: StateType = { ...activeNode };
-        updateForm(newForm);
-    }, [activeNode]);
+    }, []);
     const renderForeignObjectNode = useCallback(
         (props: ITreeCreationParameter) => {
             const { customeNodeParam, foreignObjectProps } = { ...props };
@@ -424,7 +422,7 @@ const TreeComponent = (prop: IProp) => {
                     cancelButtonString="Cancel"
                     onCancelHandler={() => {
                         handleCloseModal();
-                        restore();
+                        restore(activeNode);
                     }}
                     onSubmitHandler={submitEditFormHandler}
                     submitButtonString="Submit"

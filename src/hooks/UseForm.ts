@@ -90,7 +90,6 @@ export const UseForm = (initialVal: StateType) => {
         updateForm: (newForm: StateType) => {
             const updatedState = { ...newForm };
             setState(updatedState);
-            console.log(state);
         },
         onChangeHandler: (e: React.ChangeEvent<HTMLInputElement>) => {
             const updatedState = { ...state };
@@ -140,12 +139,12 @@ export const UseForm = (initialVal: StateType) => {
             }
             setState(updatedState);
         },
-        restore: () => {
-            const updatedState = { ...state };
+        restore: (prevState: StateType) => {
+            const updatedState = { ...prevState };
             for (let key in state) {
                 updatedState[key].errorMsg = "";
             }
-            setState(updatedState);
+            setState(prevState);
         },
     };
 };
