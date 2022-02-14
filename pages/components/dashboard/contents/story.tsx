@@ -41,7 +41,7 @@ const TreeComponent = (prop: IProp) => {
   const [toastText, setToastText] = useState("");
   const [toastTitle, setToastTitle] = useState("");
   const [toastType, setToastType] = useState(ToastType.ERROR);
-  const [toastTimer, setToastTimer] = useState(0);
+  const [toastTimer, setToastTimer] = useState(4);
   const [storyData, setStoryData] = useState({
     name: "Example Author",
     children: [
