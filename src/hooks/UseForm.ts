@@ -4,11 +4,13 @@ export enum ValidationType {
     REQUIRED = "Req",
     MIN6 = "Min6",
     CONFIRM = "Confirm",
+    MAX500 = "Max500",
 }
 const ValidationErrorText: { [key: string]: string } = {
     Req: "This field is required",
     Min6: "Maximum 5",
     Confirm: "Value is different from password field",
+    Max500: "This field must not exceed 500 characters",
 };
 type ValidationFunctionType = {
     [key: string]: (value: string, compareValue?: string) => boolean;
@@ -28,6 +30,7 @@ const ValidationFunction: ValidationFunctionType = {
     },
     Min6: (value: string) => value.length >= 6,
     Confirm: (value: string, compareValue?: string) => value === compareValue,
+    Max500: (value: string) => value.length <= 500,
 };
 const validate = (rule: string, value: string, compareValue?: string) => {
     if (typeof ValidationFunction[rule] !== "function") {

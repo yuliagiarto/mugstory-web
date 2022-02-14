@@ -23,6 +23,7 @@ import {
     ValidationType,
 } from "../../../../src/hooks/UseForm";
 import MTxtArea from "../../common/mTxtArea";
+import Toaster, { ToastJustify, ToastType } from "../../common/toaster";
 
 interface IForeignObjectProps {
     width: number;
@@ -36,6 +37,11 @@ interface ITreeCreationParameter {
 }
 
 const TreeComponent = (prop: IProp) => {
+    const [showToast, setShowToast] = useState(false);
+    const [toastText, setToastText] = useState("");
+    const [toastTitle, setToastTitle] = useState("");
+    const [toastType, setToastType] = useState(ToastType.ERROR);
+    const [toastTimer, setToastTimer] = useState(0);
     const [storyData, setStoryData] = useState({
         name: "Example Author",
         children: [
@@ -227,6 +233,14 @@ const TreeComponent = (prop: IProp) => {
     }, []);
     // End Tour Guide
 
+    // Toaster
+    useEffect(() => {
+        if (toastTitle && toastText) {
+            setShowToast(true);
+        }
+    }, [toastText, toastTitle, toastType]);
+    //  End Toaster
+
     // Firebase section
     const { authUser, loading } = useFirebaseAuth();
     const [showLoader, setShowLoader] = useState(false);
@@ -367,6 +381,13 @@ const TreeComponent = (prop: IProp) => {
             },
             errorMsg: "",
         },
+        narration: {
+            value: "",
+            validation: {
+                [ValidationType.MAX500]: `Input 500 chars only`,
+            },
+            errorMsg: "",
+        },
     });
     useEffect(() => {
         if (!selectedNode || !selectedNode.attributes) return;
@@ -398,6 +419,7 @@ const TreeComponent = (prop: IProp) => {
             firebaseNewData = {
                 content: form.content.value,
                 title: form.title.value,
+                narration: form.narration.value,
             } as Story;
             docId = selectedStory.id;
         } else {
@@ -409,7 +431,21 @@ const TreeComponent = (prop: IProp) => {
             } as Choice;
             docId = selectedNode.attributes?.id as string;
         }
-        firestore.collection(firebaseQuery).doc(docId).update(firebaseNewData);
+        firestore
+            .collection(firebaseQuery)
+            .doc(docId)
+            .update(firebaseNewData)
+            .then(() => {
+                setToastType(ToastType.SUCCESS);
+                setToastTitle("Update success");
+                setToastText(`Success updating content`);
+                setShowModal(false);
+            })
+            .catch((err) => {
+                setToastType(ToastType.ERROR);
+                setToastTitle("Update Failed");
+                setToastText(err.message);
+            });
     }, [isFormValid, form, selectedStoryIndex, selectedNode]);
     // End Form
     return (
@@ -443,6 +479,23 @@ const TreeComponent = (prop: IProp) => {
                                 ]}
                                 placeholder={titleLabel}
                             />
+                            {isTitleNode(selectedNode) ? (
+                                <MTxtArea
+                                    name="narration"
+                                    errortext={form.narration.errorMsg}
+                                    value={form.narration.value}
+                                    onBlur={onBlurAreaHandler}
+                                    onChange={onChangeAreaHandler}
+                                    label="Narration"
+                                    labelclass={["text-gray-700", "text-sm"]}
+                                    inputclass={[
+                                        "text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+                                    ]}
+                                    placeholder="Narration"
+                                />
+                            ) : (
+                                ""
+                            )}
                             <MTxtArea
                                 name="content"
                                 errortext={form.content.errorMsg}
@@ -475,6 +528,16 @@ const TreeComponent = (prop: IProp) => {
                 onOptionSelectedHandler={optionSelectedHandler}
             />
             <div className="flex justify-between md:h-full tree-container h-screen">
+                {showToast && (
+                    <Toaster
+                        titleText={toastTitle}
+                        content={toastText}
+                        type={toastType}
+                        showForSecond={toastTimer}
+                        hideToastHandler={() => setShowToast(false)}
+                        justify={ToastJustify.LEFT}
+                    />
+                )}
                 <TreeD
                     data={storyData}
                     shouldCollapseNeighborNodes={true}
