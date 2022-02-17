@@ -95,16 +95,28 @@ const TreeComponent = (prop: IProp) => {
     return node.attributes?.narration !== undefined;
   };
   const openEditModal = useCallback(
-    (node: TreeNodeDatum, e: React.MouseEvent<HTMLElement>) => {
+    (
+      e: React.MouseEvent<HTMLElement>,
+      isAddAction: boolean,
+      node?: TreeNodeDatum
+    ) => {
       e.stopPropagation();
-      setShowModal(!showModal);
-      setSelectedNode(node);
+      setShowModal(true);
+
+      if (isAddAction) {
+        const newForm = JSON.parse(JSON.stringify(defaultFormState));
+        setActiveNode(newForm);
+        updateForm(newForm);
+      }
+      setSelectedNode({} as TreeNodeDatum);
+      if (node) setSelectedNode(JSON.parse(JSON.stringify(node)));
     },
-    [showModal]
+    []
   );
   const handleCloseModal = useCallback(() => {
     setShowModal(false);
-  }, []);
+    restore(activeNode);
+  }, [activeNode]);
   const renderForeignObjectNode = useCallback(
     (props: ITreeCreationParameter) => {
       let { customeNodeParam, foreignObjectProps } = { ...props };
@@ -147,7 +159,10 @@ const TreeComponent = (prop: IProp) => {
         addChoiceComponent = (
           <div className={`${gridType}-span-1 flex items-center`}>
             <div className={`mx-auto`}>
-              <button className={`text-amber-400`}>
+              <button
+                className={`text-amber-400`}
+                onClick={(e) => openEditModal(e, true)}
+              >
                 <svg
                   className={`w-${widthSize} mx-auto`}
                   xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +217,7 @@ const TreeComponent = (prop: IProp) => {
                   <a
                     className="bg-amber-400 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-amber-400 hover:bg-opacity-70 rounded uppercase"
                     href="#"
-                    onClick={(e) => openEditModal(nodeDatum, e)}
+                    onClick={(e) => openEditModal(e, false, nodeDatum)}
                   >
                     Edit
                   </a>
@@ -385,16 +400,7 @@ const TreeComponent = (prop: IProp) => {
 
   // Start Form Section
   const titleLabel = isTitleNode(selectedNode) ? "Title" : "Choice";
-  const {
-    form,
-    onChangeHandler,
-    onChangeAreaHandler,
-    onBlurHandler,
-    onBlurAreaHandler,
-    updateForm,
-    isFormValid,
-    restore,
-  } = UseForm({
+  const defaultFormState = {
     title: {
       value: "",
       validation: {
@@ -416,7 +422,17 @@ const TreeComponent = (prop: IProp) => {
       },
       errorMsg: "",
     },
-  });
+  };
+  const {
+    form,
+    onChangeHandler,
+    onChangeAreaHandler,
+    onBlurHandler,
+    onBlurAreaHandler,
+    updateForm,
+    isFormValid,
+    restore,
+  } = UseForm(JSON.parse(JSON.stringify(defaultFormState)));
   useEffect(() => {
     if (!selectedNode || !selectedNode.attributes) return;
     let newForm: StateType = { ...form };
@@ -494,10 +510,7 @@ const TreeComponent = (prop: IProp) => {
         <Modal
           headerString={`Edit`}
           cancelButtonString="Cancel"
-          onCancelHandler={() => {
-            handleCloseModal();
-            restore(activeNode);
-          }}
+          onCancelHandler={handleCloseModal}
           onSubmitHandler={submitEditFormHandler}
           submitButtonString="Submit"
         >
