@@ -84,8 +84,10 @@ const TreeComponent = (prop: IProp) => {
     ],
   } as RawNodeDatum);
   const [showModal, setShowModal] = useState(false);
+  const [isAddAction, setIsAddAction] = useState(false);
   const [activeNode, setActiveNode] = useState({} as StateType);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
+  const [selectedParent, setSelectedParent] = useState({} as TreeNodeDatum);
   const { width, height } = useContainerSize(".tree-container");
   const nodeSize =
     width < 500
@@ -94,24 +96,23 @@ const TreeComponent = (prop: IProp) => {
   const isTitleNode = (node: RawNodeDatum): boolean => {
     return node.attributes?.narration !== undefined;
   };
+
   const openEditModal = useCallback(
-    (
-      e: React.MouseEvent<HTMLElement>,
-      isAddAction: boolean,
-      node?: TreeNodeDatum
-    ) => {
+    (e: React.MouseEvent<HTMLElement>, isAdd: boolean, node: TreeNodeDatum) => {
       e.stopPropagation();
       setShowModal(true);
+      setSelectedNode({} as TreeNodeDatum);
 
-      if (isAddAction) {
+      if (isAdd) {
         const newForm = JSON.parse(JSON.stringify(defaultFormState));
         setActiveNode(newForm);
         updateForm(newForm);
+        setSelectedParent(JSON.parse(JSON.stringify(node)));
+      } else {
+        setSelectedNode(JSON.parse(JSON.stringify(node)));
       }
-      setSelectedNode({} as TreeNodeDatum);
-      if (node) setSelectedNode(JSON.parse(JSON.stringify(node)));
     },
-    []
+    [setSelectedNode, setActiveNode, setShowModal, setSelectedParent]
   );
   const handleCloseModal = useCallback(() => {
     setShowModal(false);
@@ -129,7 +130,6 @@ const TreeComponent = (prop: IProp) => {
       let addChoiceComponent = <></>;
       let colSpan = 4;
       const gridType = width < 500 ? "row" : "col";
-      const widthSize = width < 500 ? "1/5" : "3/4";
       if (isRootNode) {
         return (
           <g strokeWidth={0} stroke="#8a8a8a">
@@ -155,16 +155,29 @@ const TreeComponent = (prop: IProp) => {
         );
       }
 
-      if (isLeafNode) {
+      if (isLeafNode || (nodeDatum.children && nodeDatum.children.length < 2)) {
+        let marginRight = "";
+        if (
+          nodeDatum.children &&
+          nodeDatum.children.length === 1 &&
+          width < 500
+        ) {
+          marginRight = "mr-20";
+        }
         addChoiceComponent = (
-          <div className={`${gridType}-span-1 flex items-center`}>
+          <div
+            className={`${gridType}-span-1 flex items-center ${marginRight} md:pl-0 md:mr-5`}
+          >
             <div className={`mx-auto`}>
               <button
                 className={`text-amber-400`}
-                onClick={(e) => openEditModal(e, true)}
+                onClick={(e) => {
+                  setIsAddAction(true);
+                  openEditModal(e, true, nodeDatum);
+                }}
               >
                 <svg
-                  className={`w-${widthSize} mx-auto`}
+                  className={`w-12 mx-auto`}
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
@@ -217,7 +230,10 @@ const TreeComponent = (prop: IProp) => {
                   <a
                     className="bg-amber-400 shadow-md text-sm text-white font-bold py-3 md:px-8 px-4 hover:bg-amber-400 hover:bg-opacity-70 rounded uppercase"
                     href="#"
-                    onClick={(e) => openEditModal(e, false, nodeDatum)}
+                    onClick={(e) => {
+                      setIsAddAction(false);
+                      openEditModal(e, false, nodeDatum);
+                    }}
                   >
                     Edit
                   </a>
@@ -390,7 +406,7 @@ const TreeComponent = (prop: IProp) => {
       }
       currentData.push({
         name: ch.caption,
-        attributes: { content: ch.content, id: ch.id },
+        attributes: { content: ch.content, id: ch.id, level: ch.level },
         children: createChoiceTree(copyChoice, nextLevel, ch.id),
       } as RawNodeDatum);
     });
@@ -446,39 +462,57 @@ const TreeComponent = (prop: IProp) => {
     updateForm(newForm);
     setActiveNode(newForm);
   }, [selectedNode]);
-  const submitEditFormHandler = useCallback(() => {
+  const submitFormHandler = useCallback(() => {
     if (
       !isFormValid() ||
       selectedStoryIndex === -1 ||
-      selectedNode.attributes === undefined
+      (selectedNode.attributes === undefined &&
+        selectedParent.attributes === undefined)
     )
       return;
     // valid form data, update firebase
     const selectedStory = stories[selectedStoryIndex];
-    let firebaseQuery = "";
-    let firebaseNewData = {};
+    let firebaseQuery = `story/${selectedStory.id}/choices`;
+    const parentLevel =
+      selectedParent.attributes && selectedParent.attributes.level !== undefined
+        ? (selectedParent.attributes!.level as number)
+        : 0;
+    const firebaseNewData = {
+      caption: form.title.value,
+      content: form.content.value,
+      level: parentLevel + 1,
+      parents: [selectedParent.attributes?.id],
+    } as Choice;
     let docId = "";
-    if (isTitleNode(selectedNode)) {
-      firebaseQuery = `story`;
-      firebaseNewData = {
-        content: form.content.value,
-        title: form.title.value,
-      } as Story;
-      docId = selectedStory.id;
-    } else {
-      firebaseQuery = `story/${selectedStory.id}/choices`;
-      firebaseNewData = {
-        caption: form.title.value,
-        content: form.content.value,
-        id: selectedNode.attributes!.id,
-        narration: form.narration.value,
-      } as Choice;
-      docId = selectedNode.attributes?.id as string;
-    }
-    firestore
+    let fbPipe: Promise<any> = firestore
       .collection(firebaseQuery)
-      .doc(docId)
-      .update(firebaseNewData)
+      .add(firebaseNewData);
+
+    if (!isAddAction) {
+      let firebaseEditData = {} as Choice;
+      docId = selectedNode.attributes?.id as string;
+      if (isTitleNode(selectedNode)) {
+        firebaseQuery = `story`;
+        firebaseEditData = {
+          content: form.content.value,
+          title: form.title.value,
+          narration: form.narration.value,
+        } as Story;
+        docId = selectedStory.id;
+      } else {
+        firebaseEditData = {
+          caption: form.title.value,
+          content: form.content.value,
+          id: selectedNode.attributes!.id,
+        } as Choice;
+      }
+      fbPipe = firestore
+        .collection(firebaseQuery)
+        .doc(docId)
+        .update(firebaseEditData);
+    }
+
+    fbPipe
       .then(() => {
         setToastType(ToastType.SUCCESS);
         setToastTitle("Update success");
@@ -490,7 +524,7 @@ const TreeComponent = (prop: IProp) => {
         setToastTitle("Update Failed");
         setToastText(err.message);
       });
-  }, [isFormValid, form, selectedStoryIndex, selectedNode]);
+  }, [isFormValid, form, selectedStoryIndex, selectedNode, selectedParent]);
   // End Form
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
@@ -508,10 +542,10 @@ const TreeComponent = (prop: IProp) => {
       {showLoader && <Loader />}
       {showModal && (
         <Modal
-          headerString={`Edit`}
+          headerString={isAddAction ? "Add" : `Edit`}
           cancelButtonString="Cancel"
           onCancelHandler={handleCloseModal}
-          onSubmitHandler={submitEditFormHandler}
+          onSubmitHandler={submitFormHandler}
           submitButtonString="Submit"
         >
           <form>
