@@ -24,6 +24,7 @@ import {
 } from "../../../../src/hooks/UseForm";
 import MTxtArea from "../../common/mTxtArea";
 import Toaster, { ToastJustify, ToastType } from "../../common/toaster";
+import MFInput from "../../common/mFInput";
 
 interface IForeignObjectProps {
     width: number;
@@ -42,6 +43,8 @@ const TreeComponent = (prop: IProp) => {
     const [toastTitle, setToastTitle] = useState("");
     const [toastType, setToastType] = useState(ToastType.ERROR);
     const [toastTimer, setToastTimer] = useState(0);
+    const [selectedImgFile, setSelectedImgFile] = useState();
+    const [imgThumbnail, setImgThumbnail] = useState("");
     const [storyData, setStoryData] = useState({
         name: "Example Author",
         children: [
@@ -104,6 +107,28 @@ const TreeComponent = (prop: IProp) => {
     );
     const handleCloseModal = useCallback(() => {
         setShowModal(false);
+    }, []);
+    useEffect(() => {
+        if (!selectedImgFile) {
+            setImgThumbnail("");
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(selectedImgFile);
+        setImgThumbnail(objectUrl);
+
+        // free memory when ever this component is unmounted
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [selectedImgFile]);
+
+    const onChangeImageHandler = useCallback((e) => {
+        if (!e.target.files || e.target.files.length === 0) {
+            setSelectedImgFile(undefined);
+            return;
+        }
+
+        // I've kept this example simple by using the first image instead of multiple
+        setSelectedImgFile(e.target.files[0]);
     }, []);
     const renderForeignObjectNode = useCallback(
         (props: ITreeCreationParameter) => {
@@ -463,8 +488,8 @@ const TreeComponent = (prop: IProp) => {
                     onSubmitHandler={submitEditFormHandler}
                     submitButtonString="Submit"
                 >
-                    <form>
-                        <div className="mb-4">
+                    <form accept-charset="utf-8" encType="multipart/form-data">
+                        <div className="mb-4 overflow-y-auto max-h-96">
                             <MInput
                                 type="text"
                                 name="title"
@@ -509,6 +534,24 @@ const TreeComponent = (prop: IProp) => {
                                 ]}
                                 placeholder="Content"
                             />
+                            {!isTitleNode(selectedNode) ? (
+                                <>
+                                    <MFInput
+                                        label="Image"
+                                        labelclass={[
+                                            "text-gray-700",
+                                            "text-sm",
+                                        ]}
+                                        inputclass={[
+                                            "text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+                                        ]}
+                                        onChange={onChangeImageHandler}
+                                    />
+                                    <img src={imgThumbnail} />
+                                </>
+                            ) : (
+                                ""
+                            )}
                         </div>
                     </form>
                 </Modal>

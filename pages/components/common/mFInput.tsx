@@ -1,13 +1,13 @@
-import React, { InputHTMLAttributes } from "react";
+import React, { InputHTMLAttributes, ChangeEvent, useState } from "react";
 
 interface IProp extends InputHTMLAttributes<HTMLInputElement> {
-    errortext: string;
+    errortext?: string;
     label?: string;
     labelclass?: string[];
     inputclass?: string[];
-    children?: React.ReactNode;
 }
-export default function MInput(props: IProp) {
+export default function MFInput(props: IProp) {
+    const [file, setFile] = useState<File>();
     const { errortext, label, labelclass, inputclass } = props;
     const arrInputElementStyles = inputclass ?? [];
     if (errortext) arrInputElementStyles.push("border border-red-500");
@@ -19,15 +19,14 @@ export default function MInput(props: IProp) {
                     {label}
                 </label>
             )}
-            {
-                <input
-                    className={`shadow appearance-none border rounded w-full py-2 px-3 ${arrInputElementStyles.join(
-                        " "
-                    )}`}
-                    {...props}
-                />
-            }
-            {errortext ? <p className="text-red-500">{errortext}</p> : null}
+            <br />
+            <input
+                type="file"
+                className={`shadow appearance-none border rounded w-full py-2 px-3 ${arrInputElementStyles.join(
+                    " "
+                )}`}
+                {...props}
+            />
         </>
     );
 }
