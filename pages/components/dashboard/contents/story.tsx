@@ -84,6 +84,8 @@ const TreeComponent = (prop: IProp) => {
     ],
   } as RawNodeDatum);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
+    useState(false);
   const [isAddAction, setIsAddAction] = useState(false);
   const [activeNode, setActiveNode] = useState({} as StateType);
   const [selectedNode, setSelectedNode] = useState({} as TreeNodeDatum);
@@ -114,6 +116,15 @@ const TreeComponent = (prop: IProp) => {
     },
     [setSelectedNode, setActiveNode, setShowModal, setSelectedParent]
   );
+  const showDeleteStoryConfirmation = useCallback(
+    (e: React.MouseEvent<HTMLElement>, node: TreeNodeDatum) => {
+      e.stopPropagation();
+      setSelectedNode(JSON.parse(JSON.stringify(node)));
+      setShowDeleteConfirmationModal(true);
+    },
+    [setSelectedNode, setShowDeleteConfirmationModal]
+  );
+
   const handleCloseModal = useCallback(() => {
     setShowModal(false);
     restore(activeNode);
@@ -215,8 +226,31 @@ const TreeComponent = (prop: IProp) => {
           <foreignObject {...foreignObjectProps}>
             <div className={`grid grid-${gridType}s-4 overflow-hidden`}>
               <div className={`shadow-md ${gridType}-span-${colSpan}`}>
-                <div className="px-6 py-4 bg-white border-b border-gray-200 text-base">
+                <div className="px-6 py-4 bg-white border-b border-gray-200 text-base relative">
                   <p>{nodeDatum.name}</p>
+                  <div className={`absolute right-0 top-0`}>
+                    <div className={`mx-auto`}>
+                      <button
+                        className={`text-amber-400`}
+                        onClick={(e) => {
+                          showDeleteStoryConfirmation(e, nodeDatum);
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={`w-5 m-2`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 {nodeDatum.attributes?.content && (
                   <div className="p-6 bg-white border-b border-gray-200">
@@ -525,6 +559,30 @@ const TreeComponent = (prop: IProp) => {
         setToastText(err.message);
       });
   }, [isFormValid, form, selectedStoryIndex, selectedNode, selectedParent]);
+
+  const deleteStory = useCallback(() => {
+    const selectedStory = stories[selectedStoryIndex];
+    const firebaseQuery = `story/${selectedStory.id}/choices`;
+    const docId = selectedNode.attributes?.id as string;
+    firestore
+      .collection(firebaseQuery)
+      .doc(docId)
+      .delete()
+      .then(() => {
+        setToastType(ToastType.SUCCESS);
+        setToastTitle("Delete success");
+        setToastText(`Success deleting content`);
+      })
+      .catch((err) => {
+        setToastType(ToastType.ERROR);
+        setToastTitle("Update Failed");
+        setToastText(err.message);
+      })
+      .finally(() => {
+        setShowToast(true);
+        setShowDeleteConfirmationModal(false);
+      });
+  }, [selectedStoryIndex, selectedNode]);
   // End Form
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
@@ -540,6 +598,19 @@ const TreeComponent = (prop: IProp) => {
         />
       )}
       {showLoader && <Loader />}
+      {showDeleteConfirmationModal && (
+        <Modal
+          headerString="Delete Confirmation"
+          cancelButtonString="Cancel"
+          onCancelHandler={() => {
+            setShowDeleteConfirmationModal(false);
+          }}
+          onSubmitHandler={deleteStory}
+          submitButtonString="Delete"
+        >
+          <p>Are you sure you want to delete {selectedNode.name}</p>
+        </Modal>
+      )}
       {showModal && (
         <Modal
           headerString={isAddAction ? "Add" : `Edit`}
